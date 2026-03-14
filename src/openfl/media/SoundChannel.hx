@@ -76,6 +76,8 @@ import lime.utils.Int16Array;
 	**/
 	public var soundTransform(get, set):SoundTransform;
 
+	public var pitch(get, set):Float;
+
 	@:noCompletion private var __sound:Sound;
 	@:noCompletion private var __isValid:Bool;
 	@:noCompletion private var __soundTransform:SoundTransform;
@@ -314,6 +316,27 @@ import lime.utils.Int16Array;
 
 		#if lime
 		__audioSource.currentTime = Std.int(value) - __audioSource.offset;
+		#end
+		return value;
+	}
+
+	@:noCompletion private function get_pitch():Float
+	{
+		if (!__isValid) return 1;
+
+		#if lime
+		return __audioSource.pitch;
+		#else
+		return 1;
+		#end
+	}
+
+	@:noCompletion private function set_pitch(value:Float):Float
+	{
+		if (!__isValid) return 1;
+
+		#if lime
+		__audioSource.pitch = value;
 		#end
 		return value;
 	}

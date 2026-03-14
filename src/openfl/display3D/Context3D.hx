@@ -23,7 +23,7 @@ import openfl.geom.Point;
 import openfl.geom.Rectangle;
 import openfl.utils._internal.Float32Array;
 import openfl.utils._internal.UInt16Array;
-import openfl.utils._internal.UInt8Array;
+import openfl.display3D.utils.UInt8Buff;
 import openfl.utils.AGALMiniAssembler;
 import openfl.utils.ByteArray;
 import openfl.display.OpenGLRenderer;
@@ -1150,10 +1150,9 @@ import lime.math.Vector2;
 
 			__flushGLFramebuffer();
 			__flushGLViewport();
-
-			// TODO: Read less pixels if srcRect is smaller
-
-			var data = new UInt8Array(backBufferWidth * backBufferHeight * 4);
+			// ! EDITED BY NE_EO TO REDUCE GARBAGE MEMORY
+			var buffer = UInt8Buff.get(backBufferWidth * backBufferHeight * 4); // new UInt8Array(backBufferWidth * backBufferHeight * 4);
+			var data = buffer.buffer;
 			gl.readPixels(0, 0, backBufferWidth, backBufferHeight, __backBufferTexture.__format, gl.UNSIGNED_BYTE, data);
 
 			var image = new Image(new ImageBuffer(data, backBufferWidth, backBufferHeight, 32, BGRA32));
@@ -1164,6 +1163,8 @@ import lime.math.Vector2;
 				setRenderToTexture(cacheRenderToTexture, __state.renderToTextureDepthStencil, __state.renderToTextureAntiAlias,
 					__state.renderToTextureSurfaceSelector);
 			}
+
+			buffer.put();
 		}
 		#end
 	}
