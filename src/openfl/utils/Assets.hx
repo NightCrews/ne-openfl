@@ -1,5 +1,9 @@
 package openfl.utils;
 
+#if NIGHT_ENGINE
+import funkin.backend.ClientPrefs;
+import funkin.backend.system.OptimizedBitmapData;
+#end
 import openfl.utils._internal.Log;
 import openfl.display.BitmapData;
 import openfl.display.MovieClip;
@@ -132,11 +136,13 @@ class Assets
 		@param	id		The ID or asset path for the bitmap
 		@param	useCache		(Optional) Whether to allow use of the asset cache (Default: true)
 		@param  allowCompressedTextures		(Optional) Wether to allow compressed textures to be used to get this bitmap (Default: true)
+		@param	pushToGPU		Whenever the image should be immediately pushed to GPU.
 		@return		A new BitmapData object
 
 		@see [Working with bitmap assets](https://books.openfl.org/openfl-developers-guide/working-with-bitmaps/working-with-bitmap-assets.html)
 	**/
-	public static function getBitmapData(id:String, useCache:Bool = true, allowCompressedTextures:Bool = true):BitmapData
+	public static function getBitmapData(id:String, useCache:Bool = true, allowCompressedTextures:Bool = true, pushToGPU:Bool = true,
+			?vramOnly:Bool = false):BitmapData
 	{
 		#if (lime && tools && !display)
 		if (useCache && cache.enabled && cache.hasBitmapData(id))
@@ -180,8 +186,19 @@ class Assets
 			#if flash
 			var bitmapData = image.src;
 			#else
-			var bitmapData = BitmapData.fromImage(image);
-			bitmapData.__asset = true;
+			var bitmapData:BitmapData = null;
+			#if (NIGHT_ENGINE && !macro)
+			if (pushToGPU && !funkin.backend.system.Main.forceGPUOnlyBitmapsOff && ClientPrefs.data.cacheOnGPU && vramOnly)
+			{
+				bitmapData = new OptimizedBitmapData(0, 0, true, 0);
+				cast(bitmapData, OptimizedBitmapData).useVRAM = vramOnly;
+				bitmapData.__fromImage(image);
+			}
+			else
+			#end
+			{
+				bitmapData = BitmapData.fromImage(image);
+			}
 			#end
 
 			if (useCache && cache.enabled)
@@ -318,18 +335,33 @@ class Assets
 		return null;
 	}
 
-	public static function getMusic(id:String, useCache:Bool = true):Sound
+	public static function getMusic(id:String, useCache:Bool = true, staticFallback:Bool = true):Sound
 	{
-		#if (lime_vorbis && lime > "7.9.0")
-		var path = getPath(id);
-		// TODO: What if it is a WAV or non-Vorbis file?
-		var vorbisFile = VorbisFile.fromFile(path);
-		var buffer = AudioBuffer.fromVorbisFile(vorbisFile);
-		return Sound.fromAudioBuffer(buffer);
-		#else
-		// TODO: Streaming sound
-		return getSound(id, useCache);
+		/* #if (lime_vorbis && lime > "7.9.0")
+			var path = getPath(id);
+			// TODO: What if it is a WAV or non-Vorbis file?
+			var vorbisFile = VorbisFile.fromFile(path);
+			var buffer = AudioBuffer.fromVorbisFile(vorbisFile);
+			return Sound.fromAudioBuffer(buffer);
+			#else
+			// TODO: Streaming sound
+			return getSound(id, useCache);
+			#end */
+		if (useCache && staticFallback && cache.enabled && cache.hasSound(id))
+		{
+			var sound = cache.getSound(id);
+			if (isValidSound(sound)) return sound;
+		}
+		#if (NIGHT_ENGINE && lime_vorbis && lime > "7.9.0" && !macro)
+		if (ClientPrefs.data.streamedMusic)
+		{
+			var path = getPath(id);
+			// TODO: What if it is a WAV or non-Vorbis file?
+			var vorbisFile = VorbisFile.fromFile(path);
+			if (vorbisFile != null) return Sound.fromAudioBuffer(AudioBuffer.fromVorbisFile(vorbisFile));
+		}
 		#end
+		return if (staticFallback) getSound(id, useCache); else null;
 	}
 
 	/**
@@ -571,7 +603,7 @@ class Assets
 
 		@see [Working with bitmap assets](https://books.openfl.org/openfl-developers-guide/working-with-bitmaps/working-with-bitmap-assets.html)
 	**/
-	public static function loadBitmapData(id:String, useCache:Null<Bool> = true):Future<BitmapData>
+	public static function loadBitmapData(id:String, useCache:Null<Bool> = true, ?allowGPU:Bool = true, ?vramOnly:Bool = false):Future<BitmapData>
 	{
 		if (useCache == null) useCache = true;
 
@@ -596,8 +628,19 @@ class Assets
 				#if flash
 				var bitmapData = image.src;
 				#else
-				var bitmapData = BitmapData.fromImage(image);
-				bitmapData.__asset = true;
+				var bitmapData:BitmapData = null;
+				#if (!macro && NIGHT_ENGINE)
+				if (allowGPU && !funkin.backend.system.Main.forceGPUOnlyBitmapsOff && ClientPrefs.data.cacheOnGPU && vramOnly)
+				{
+					bitmapData = new OptimizedBitmapData(0, 0, true, 0);
+					cast(bitmapData, OptimizedBitmapData).useVRAM = vramOnly;
+					bitmapData.__fromImage(image);
+				}
+				else
+				#end
+				{
+					bitmapData = BitmapData.fromImage(image);
+				}
 				#end
 
 				if (useCache && cache.enabled)
