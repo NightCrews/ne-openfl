@@ -76,8 +76,6 @@ import lime.utils.Int16Array;
 	**/
 	public var soundTransform(get, set):SoundTransform;
 
-	public var pitch(get, set):Float;
-
 	@:noCompletion private var __sound:Sound;
 	@:noCompletion private var __isValid:Bool;
 	@:noCompletion private var __soundTransform:SoundTransform;
@@ -320,27 +318,6 @@ import lime.utils.Int16Array;
 		return value;
 	}
 
-	@:noCompletion private function get_pitch():Float
-	{
-		if (!__isValid) return 1;
-
-		#if lime
-		return __audioSource.pitch;
-		#else
-		return 1;
-		#end
-	}
-
-	@:noCompletion private function set_pitch(value:Float):Float
-	{
-		if (!__isValid) return 1;
-
-		#if lime
-		__audioSource.pitch = value;
-		#end
-		return value;
-	}
-
 	@:noCompletion private function get_soundTransform():SoundTransform
 	{
 		return __soundTransform.clone();
@@ -415,7 +392,7 @@ import lime.utils.Int16Array;
 	#end
 
 	#if lime_openal
-	private function watchBuffers(_):Void
+	private function watchBuffers(i:Int):Void
 	{
 		var alAudioContext = __sound.__alAudioContext;
 		var hasSampleData = true;
