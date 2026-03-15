@@ -115,16 +115,10 @@ jobs:
           haxelib run hxp test -Dtarget=hl -Duse-lime-tools -verbose --install-hxp-alias
 
   unit-test-lime-develop:
-    runs-on: macos-13
+    runs-on: macos-12
     steps:
       - uses: actions/checkout@v4
         with:
-          submodules: true
-
-      - uses: actions/checkout@v4
-        with:
-          repository: openfl/lime
-          path: lime-develop
           submodules: true
 
       - uses: krdlab/setup-haxe@master
@@ -147,25 +141,25 @@ jobs:
           haxelib install hxp --quiet
           haxelib install utest --quiet
 
-      - name: Setup environment
-        run: |
-          haxelib dev openfl ${{ github.workspace }}
-          haxelib dev lime ${{ github.workspace }}/lime-develop
+      - name: Print Haxe Version
+        run: haxe -version
 
-      - name: Install HashLink dependencies with Homebrew
+      - name: Install dependencies with Homebrew
         run: |
-          pushd ${{ github.workspace }}/lime-develop/project/lib/hashlink
           brew update
           rm /usr/local/bin/2to3*
           rm /usr/local/bin/idle3*
           rm /usr/local/bin/pydoc3*
           rm /usr/local/bin/python3*
-          rm /usr/local/bin/pip3*
-          brew bundle
-          popd
+          brew install mbedtls
 
-      - name: Rebuild Lime
+      - name: Setup environment
         run: |
+          haxelib dev openfl ${{ github.workspace }}
+
+      - name: Setup Lime dev
+        run: |
+          haxelib git lime https://github.com/openfl/lime
           haxelib run lime rebuild tools
           haxelib run lime rebuild hl
           haxelib run lime config AIR_SDK ${{ env.AIR_HOME }}
@@ -309,7 +303,7 @@ jobs:
     strategy:
       matrix:
         haxe-version: [3.4.7, 4.0.5, 4.1.5, 4.2.5, 4.3.6]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
 
       - uses: krdlab/setup-haxe@v1
@@ -456,7 +450,7 @@ jobs:
 
   hashlink-samples:
     needs: package-haxelib
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
 
       - uses: krdlab/setup-haxe@v1

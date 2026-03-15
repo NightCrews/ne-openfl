@@ -1,6 +1,7 @@
 package openfl.display3D;
 
 #if !flash
+import openfl.display3D.utils.UInt8Buff;
 import openfl.display3D._internal.Context3DState;
 import openfl.display3D._internal.GLBuffer;
 import openfl.display3D._internal.GLFramebuffer;
@@ -23,10 +24,9 @@ import openfl.geom.Point;
 import openfl.geom.Rectangle;
 import openfl.utils._internal.Float32Array;
 import openfl.utils._internal.UInt16Array;
-import openfl.display3D.utils.UInt8Buff;
+import openfl.utils._internal.UInt8Array;
 import openfl.utils.AGALMiniAssembler;
 import openfl.utils.ByteArray;
-import openfl.display.OpenGLRenderer;
 #if lime
 import lime.graphics.opengl.GL;
 import lime.graphics.Image;
@@ -284,7 +284,6 @@ import lime.math.Vector2;
 	@:noCompletion private var __stage3D:Stage3D;
 	@:noCompletion private var __state:Context3DState;
 	@:noCompletion private var __vertexConstants:Float32Array;
-	@:noCompletion private var __usingComplexBlend:Bool;
 
 	@:noCompletion private function new(stage:Stage, contextState:Context3DState = null, stage3D:Stage3D = null)
 	{
@@ -942,12 +941,7 @@ import lime.math.Vector2;
 	**/
 	public function isASTCSupported():Bool
 	{
-		if (ASTCTexture.__astcCompressedTexturesSupported == null)
-		{
-			ASTCTexture.__astcCompressedTexturesSupported = gl.getSupportedExtensions().contains("KHR_texture_compression_astc_ldr");
-		}
-
-		return ASTCTexture.__astcCompressedTexturesSupported == true;
+		return gl.getExtension("KHR_texture_compression_astc_ldr") != null;
 	}
 
 	/**
@@ -1150,7 +1144,7 @@ import lime.math.Vector2;
 
 			__flushGLFramebuffer();
 			__flushGLViewport();
-			// ! EDITED BY NE_EO TO REDUCE GARBAGE MEMORY
+			//! EDITED BY NE_EO TO REDUCE GARBAGE MEMORY
 			var buffer = UInt8Buff.get(backBufferWidth * backBufferHeight * 4); // new UInt8Array(backBufferWidth * backBufferHeight * 4);
 			var data = buffer.buffer;
 			gl.readPixels(0, 0, backBufferWidth, backBufferHeight, __backBufferTexture.__format, gl.UNSIGNED_BYTE, data);
@@ -1274,22 +1268,7 @@ import lime.math.Vector2;
 		var count = (numTriangles == -1) ? indexBuffer.__numIndices : (numTriangles * 3);
 
 		__bindGLElementArrayBuffer(indexBuffer.__id);
-
-		if (OpenGLRenderer.__coherentBlendsSupported)
-		{
-			gl.enable(0x9285); // BLEND_ADVANCED_COHERENT_KHR
-		}
-		else if (__usingComplexBlend)
-		{
-			gl.blendBarrier();
-		}
-
 		gl.drawElements(gl.TRIANGLES, count, gl.UNSIGNED_SHORT, firstIndex * 2);
-
-		if (OpenGLRenderer.__coherentBlendsSupported)
-		{
-			gl.disable(0x9285); // BLEND_ADVANCED_COHERENT_KHR
-		}
 	}
 
 	/**
@@ -2099,21 +2078,7 @@ import lime.math.Vector2;
 			__state.program.__flush();
 		}
 
-		if (OpenGLRenderer.__coherentBlendsSupported)
-		{
-			gl.enable(0x9285); // BLEND_ADVANCED_COHERENT_KHR
-		}
-		else if (__usingComplexBlend)
-		{
-			gl.blendBarrier();
-		}
-
 		gl.drawArrays(gl.TRIANGLES, firstIndex, count);
-
-		if (OpenGLRenderer.__coherentBlendsSupported)
-		{
-			gl.disable(0x9285); // BLEND_ADVANCED_COHERENT_KHR
-		}
 	}
 
 	@:noCompletion private function __flushGL():Void
@@ -2444,12 +2409,9 @@ import lime.math.Vector2;
 					__bindGLTextureCubeMap(texture.__getTexture());
 				}
 
-				#if lime
-				if (__context.type == OPENGL)
-				{
-					// TODO: Cache?
-					gl.enable(gl.TEXTURE_2D);
-				}
+				#if (desktop && !html5)
+				// TODO: Cache?
+				gl.enable(gl.TEXTURE_2D);
 				#end
 
 				__contextState.textures[i] = texture;
@@ -2481,12 +2443,9 @@ import lime.math.Vector2;
 					texture.__alphaTexture.__setSamplerState(samplerState);
 					gl.uniform1i(__state.program.__agalAlphaSamplerEnabled[sampler].location, 1);
 
-					#if lime
-					if (__context.type == OPENGL)
-					{
-						// TODO: Cache?
-						gl.enable(gl.TEXTURE_2D);
-					}
+					#if (desktop && !html5)
+					// TODO: Cache?
+					gl.enable(gl.TEXTURE_2D);
 					#end
 				}
 				else
@@ -2775,11 +2734,6 @@ import lime.math.Vector2;
 			}
 			__contextState.__enableGLStencilTest = enable;
 		}
-	}
-
-	@:noCompletion private inline function __glBlendBarrier():Void
-	{
-		gl.blendBarrier();
 	}
 
 	// Get & Set Methods

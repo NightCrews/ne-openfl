@@ -61,10 +61,14 @@ class ColorMatrixFilterTest extends Test
 
 		var result = cast(color_clone, ColorMatrixFilter).matrix;
 
+		#if flash
 		for (i in 0...matrix.length)
 		{
 			Assert.equals(matrix[i], result[i]);
 		}
+		#else
+		Assert.equals(matrix, result);
+		#end
 	}
 
 	public function test_matrix()

@@ -14,7 +14,6 @@ import openfl.display.Shader;
 	objects that inherit from the DisplayObject class), such as MovieClip,
 	SimpleButton, TextField, and Video objects, as well as to BitmapData
 	objects.
-
 	To create a convolution filter, use the syntax `new ConvolutionFilter()`.
 	The use of filters depends on the object to which you apply the filter:
 
@@ -39,9 +38,6 @@ import openfl.display.Shader;
 	limitation is 2,880 pixels in height and 2,880 pixels in width. For
 	example, if you zoom in on a large movie clip with a filter applied, the
 	filter is turned off if the resulting image exceeds maximum dimensions.
-
-	@see `openfl.display.DisplayObject.filters`
-	@see `openfl.display.BitmapData.applyFilter`
 **/
 #if !openfl_debug
 @:fileXml('tags="haxe,release"')
@@ -279,8 +275,9 @@ class ConvolutionFilter extends BitmapFilter
 #end
 private class ConvolutionShader extends BitmapFilterShader
 {
-	@:glFragmentSource("#pragma header
-		varying vec2 vBlurCoords[9];
+	@:glFragmentSource("varying vec2 vBlurCoords[9];
+
+		uniform sampler2D openfl_Texture;
 
 		uniform float uBias;
 		uniform mat3 uConvoMatrix;
@@ -321,8 +318,13 @@ private class ConvolutionShader extends BitmapFilterShader
 			gl_FragColor = c;
 
 		}")
-	@:glVertexSource("#pragma header
+	@:glVertexSource("attribute vec4 openfl_Position;
+		attribute vec2 openfl_TextureCoord;
+
 		varying vec2 vBlurCoords[9];
+
+		uniform mat4 openfl_Matrix;
+		uniform vec2 openfl_TextureSize;
 
 		void main(void) {
 

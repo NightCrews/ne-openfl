@@ -2,6 +2,7 @@ package openfl.net._internal.websocket;
 
 import openfl.utils.Function;
 import openfl.utils.Object;
+import crossbyte.crypto.Random;
 import openfl.events.Event;
 import openfl.utils.io.ByteArray;
 import openfl.utils.Timer;
@@ -15,7 +16,6 @@ import haxe.io.BytesBuffer;
 import haxe.io.Eof;
 import haxe.io.Error;
 import haxe.io.Output;
-import openfl.Lib;
 
 /**
  * ...
@@ -181,8 +181,7 @@ class WebSocket
 			}
 			__socket.output.bigEndian = true;
 			__connect();
-			var stage = Lib.current.stage;
-			stage.addEventListener(Event.ENTER_FRAME, __onTickConnect);
+			CrossByte.current.addEventListener(Event.TICK, __onTickConnect);
 		}
 		else
 		{
@@ -599,11 +598,11 @@ class WebSocket
 	private function __openConnection(tickListener:Event->Void):Void
 	{
 		__connected = true;
-		var stage = Lib.current.stage;
-		stage.addEventListener(Event.ENTER_FRAME, __onTickProcess);
+		var crossByte:CrossByte = CrossByte.current;
+		crossByte.addEventListener(Event.TICK, __onTickProcess);
 		if (tickListener != null)
 		{
-			stage.removeEventListener(Event.ENTER_FRAME, tickListener);
+			crossByte.removeEventListener(Event.TICK, tickListener);
 			__doHandshake();
 		}
 	}
@@ -613,9 +612,9 @@ class WebSocket
 		__timeout = 3000;
 		__timestamp = Sys.time();
 
-		var stage = Lib.current.stage;
-		stage.removeEventListener(Event.ENTER_FRAME, __onTickConnect);
-		stage.addEventListener(Event.ENTER_FRAME, __onTickSSLHandshake);
+		var crossByte:CrossByte = CrossByte.current;
+		crossByte.removeEventListener(Event.TICK, __onTickConnect);
+		crossByte.addEventListener(Event.TICK, __onTickSSLHandshake);
 	}
 
 	private function __onTickSSLHandshake(e:Event):Void
@@ -675,9 +674,7 @@ class WebSocket
 	private function __close(code:Int, ?reason:String):Void
 	{
 		if (__socket == null) return;
-		
-		var stage = Lib.current.stage;
-		
+
 		if (__connected)
 		{
 			__socket.close();
@@ -689,16 +686,15 @@ class WebSocket
 
 			readyState = CLOSED;
 			__connected = false;
-			var stage = Lib.current.stage;
-			stage.removeEventListener(Event.ENTER_FRAME, __onTickProcess);
+			CrossByte.current.removeEventListener(Event.TICK, __onTickProcess);
 		}
 		else
 		{
-			stage.removeEventListener(Event.ENTER_FRAME, __onTickConnect);
+			CrossByte.current.removeEventListener(Event.TICK, __onTickConnect);
 
 			if (__secure)
 			{
-				stage.removeEventListener(Event.ENTER_FRAME, __onTickSSLHandshake);
+				CrossByte.current.removeEventListener(Event.TICK, __onTickSSLHandshake);
 			}
 		}
 
@@ -895,7 +891,7 @@ class WebSocket
 		__socket.output.flush();
 	}
 
-	@:access(openfl.net._internal.websocket)
+	@:access(crossbyte._internal.websocket)
 	inline function fromAcceptedSocket(socket:FlexSocket):WebSocket
 	{
 		var acceptedSocket:WebSocket = new AcceptedWebSocket();
@@ -950,21 +946,4 @@ inline function fromAcceptedSocket(socket:FlexSocket):WebSocket
 	acceptedSocket.__initSocket(socket);
 
 	return acceptedSocket;
-}
-
-class Random{
-	public static function getSecureRandomBytes(len:Int):Bytes 
-	{
-        var out:Bytes = Bytes.alloc(len);
-        var seed:Int = Std.int(haxe.Timer.stamp() * 1000000) ^ Std.random(0x7FFFFFFF);
-
-        for (i in 0...len) {
-            seed ^= seed << 13;
-            seed ^= seed >> 17;
-            seed ^= seed << 5;
-            out.set(i, (seed & 0xFF));
-        }
-
-        return out;
-    }
 }

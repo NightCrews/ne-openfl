@@ -217,11 +217,6 @@ class SimpleButton extends InteractiveObject
 			super.__getBounds(rect, matrix);
 		}
 
-		if (__currentState == null)
-		{
-			return;
-		}
-
 		var childWorldTransform = Matrix.__pool.get();
 
 		DisplayObject.__calculateAbsoluteTransform(__currentState.__transform, matrix, childWorldTransform);
@@ -371,7 +366,7 @@ class SimpleButton extends InteractiveObject
 	{
 		if (__downState != null && __currentState == __downState)
 		{
-			__currentState = downState;
+			__currentState = __downState;
 		}
 
 		return __downState = downState;

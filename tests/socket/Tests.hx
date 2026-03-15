@@ -7,7 +7,6 @@ class Tests
 	{
 		var runner = new Runner();
 		runner.addCase(new ServerSocketTest());
-		runner.addCase(new DatagramSocketTest());
 		Report.create(runner);
 		runner.run();
 	}

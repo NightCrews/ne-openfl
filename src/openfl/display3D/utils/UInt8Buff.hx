@@ -1,6 +1,5 @@
 package openfl.display3D.utils;
 
-#if flixel
 import flixel.util.FlxPool.IFlxPooled;
 import flixel.util.FlxPool;
 import lime.utils.UInt8Array;
@@ -9,10 +8,8 @@ class UInt8Buff implements IFlxPooled
 {
 	static var _pools:Map<Int, FlxPool<UInt8Buff>> = [];
 
-	public static function getPool(length:Int)
-	{
-		if (!_pools.exists(length))
-		{
+	public static function getPool(length:Int) {
+		if(!_pools.exists(length)) {
 			_pools.set(length, new FlxPool<UInt8Buff>(UInt8Buff));
 		}
 		return _pools.get(length);
@@ -26,7 +23,8 @@ class UInt8Buff implements IFlxPooled
 	{
 		var rect = getPool(length).get().set(length);
 		rect._inPool = false;
-		if (rect.buffer == null) rect.buffer = new UInt8Array(length);
+		if(rect.buffer == null)
+			rect.buffer = new UInt8Array(length);
 		return rect;
 	}
 
@@ -46,8 +44,7 @@ class UInt8Buff implements IFlxPooled
 
 	public var length(get, never):Int;
 
-	inline function get_length()
-	{
+	inline function get_length() {
 		return buffer.length;
 	}
 
@@ -96,4 +93,3 @@ class UInt8Buff implements IFlxPooled
 	 */
 	public function destroy() {}
 }
-#end

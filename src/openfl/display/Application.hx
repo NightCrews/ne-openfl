@@ -46,7 +46,7 @@ class Application #if lime extends LimeApplication #end
 	#end
 	{
 		#if lime
-		super(appMeta);
+		super();
 		#end
 		if (Lib.application == null)
 		{

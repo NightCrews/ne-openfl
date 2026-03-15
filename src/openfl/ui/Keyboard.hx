@@ -814,16 +814,9 @@ import lime.ui.KeyCode;
 	}
 	#end
 
-	@:noCompletion private static function __getCharCode(key:Int, shift:Bool = false, capsLock:Bool = false):Int
+	@:noCompletion private static function __getCharCode(key:Int, shift:Bool = false):Int
 	{
-		var effectiveShift = shift;
-
-		if (key >= Keyboard.A && key <= Keyboard.Z)
-		{
-			effectiveShift = shift != capsLock; // XOR only for letters
-		}
-
-		if (!effectiveShift)
+		if (!shift)
 		{
 			switch (key)
 			{
