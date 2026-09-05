@@ -234,11 +234,13 @@ import lime.media.AudioSource;
 		dispatchEvent(new Event(Event.SOUND_COMPLETE));
 	}
 
-	function set___audioSource(value:AudioSource):AudioSource {
+	function set___audioSource(value:AudioSource):AudioSource
+	{
 		return __source = value;
 	}
 
-	function get___audioSource():AudioSource {
+	function get___audioSource():AudioSource
+	{
 		return __source;
 	}
 }

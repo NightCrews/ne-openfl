@@ -24,6 +24,9 @@ using StringTools;
 @:final class ASTCTexture extends TextureBase
 {
 	@:noCompletion
+	private static var __astcCompressedTexturesSupported:Null<Bool>;
+
+	@:noCompletion
 	private function new(context:Context3D, data:ByteArray):Void
 	{
 		super(context);
@@ -94,8 +97,7 @@ using StringTools;
 					}
 				}
 
-				if (aniso > Context3D.__glMaxTextureMaxAnisotropy)
-					aniso = Context3D.__glMaxTextureMaxAnisotropy;
+				if (aniso > Context3D.__glMaxTextureMaxAnisotropy) aniso = Context3D.__glMaxTextureMaxAnisotropy;
 
 				__context.gl.texParameterf(__context.gl.TEXTURE_2D, Context3D.__glTextureMaxAnisotropy, aniso);
 			}

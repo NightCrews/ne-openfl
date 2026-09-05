@@ -1,7 +1,7 @@
 package openfl.utils;
 
-import funkin.backend.ClientPrefs;
-import funkin.backend.system.OptimizedBitmapData;
+import funkin.ClientPrefs;
+import funkin.backend.system.modules.OptimizedBitmapData;
 import openfl.utils._internal.Log;
 import openfl.display.BitmapData;
 import openfl.display.MovieClip;
