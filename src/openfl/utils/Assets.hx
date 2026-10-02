@@ -1,6 +1,6 @@
 package openfl.utils;
 
-import funkin.ClientPrefs;
+import funkin.backend.ClientPrefs;
 import funkin.backend.system.modules.OptimizedBitmapData;
 import openfl.utils._internal.Log;
 import openfl.display.BitmapData;
@@ -120,7 +120,8 @@ class Assets
 
 		@see [Working with bitmap assets](https://books.openfl.org/openfl-developers-guide/working-with-bitmaps/working-with-bitmap-assets.html)
 	**/
-	public static function getBitmapData(id:String, useCache:Bool = true, allowCompressedTextures:Bool = true, pushToGPU:Bool = true, ?vramOnly:Bool = false):BitmapData
+	public static function getBitmapData(id:String, useCache:Bool = true, allowCompressedTextures:Bool = true, pushToGPU:Bool = true,
+			?vramOnly:Bool = false):BitmapData
 	{
 		#if (lime && tools && !display)
 		if (useCache && cache.enabled && cache.hasBitmapData(id))
@@ -165,11 +166,16 @@ class Assets
 			var bitmapData = image.src;
 			#else
 			var bitmapData:BitmapData = null;
-			#if !macro if (pushToGPU && !funkin.backend.system.Main.forceGPUOnlyBitmapsOff && ClientPrefs.data.cacheOnGPU && vramOnly) {
+			#if !macro
+			if (pushToGPU && !funkin.backend.system.Main.forceGPUOnlyBitmapsOff && ClientPrefs.data.cacheOnGPU && vramOnly)
+			{
 				bitmapData = new OptimizedBitmapData(0, 0, true, 0);
 				cast(bitmapData, OptimizedBitmapData).useVRAM = vramOnly;
 				bitmapData.__fromImage(image);
-			} else #end {
+			}
+			else
+			#end
+			{
 				bitmapData = BitmapData.fromImage(image);
 			}
 			#end
@@ -311,21 +317,23 @@ class Assets
 	public static function getMusic(id:String, useCache:Bool = true, staticFallback:Bool = true):Sound
 	{
 		/* #if (lime_vorbis && lime > "7.9.0")
-		var path = getPath(id);
-		// TODO: What if it is a WAV or non-Vorbis file?
-		var vorbisFile = VorbisFile.fromFile(path);
-		var buffer = AudioBuffer.fromVorbisFile(vorbisFile);
-		return Sound.fromAudioBuffer(buffer);
-		#else
-		// TODO: Streaming sound
-		return getSound(id, useCache);
-		#end */
-		if (useCache && staticFallback && cache.enabled && cache.hasSound(id)) {
+			var path = getPath(id);
+			// TODO: What if it is a WAV or non-Vorbis file?
+			var vorbisFile = VorbisFile.fromFile(path);
+			var buffer = AudioBuffer.fromVorbisFile(vorbisFile);
+			return Sound.fromAudioBuffer(buffer);
+			#else
+			// TODO: Streaming sound
+			return getSound(id, useCache);
+			#end */
+		if (useCache && staticFallback && cache.enabled && cache.hasSound(id))
+		{
 			var sound = cache.getSound(id);
 			if (isValidSound(sound)) return sound;
 		}
 		#if (lime_vorbis && lime > "7.9.0" && !macro)
-		if (ClientPrefs.data.streamedMusic) {
+		if (ClientPrefs.data.streamedMusic)
+		{
 			var path = getPath(id);
 			// TODO: What if it is a WAV or non-Vorbis file?
 			var vorbisFile = VorbisFile.fromFile(path);
@@ -600,11 +608,16 @@ class Assets
 				var bitmapData = image.src;
 				#else
 				var bitmapData:BitmapData = null;
-				#if !macro if (allowGPU && !funkin.backend.system.Main.forceGPUOnlyBitmapsOff && ClientPrefs.data.cacheOnGPU && vramOnly) {
+				#if !macro
+				if (allowGPU && !funkin.backend.system.Main.forceGPUOnlyBitmapsOff && ClientPrefs.data.cacheOnGPU && vramOnly)
+				{
 					bitmapData = new OptimizedBitmapData(0, 0, true, 0);
 					cast(bitmapData, OptimizedBitmapData).useVRAM = vramOnly;
 					bitmapData.__fromImage(image);
-				} else #end {
+				}
+				else
+				#end
+				{
 					bitmapData = BitmapData.fromImage(image);
 				}
 				#end
